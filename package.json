@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "core-js": "^3.4.4",
+    "lodash.debounce": "^4.0.8",
+    "node-open-geocoder": "^4.0.1",
     "vue": "^2.6.10"
   },
   "devDependencies": {
