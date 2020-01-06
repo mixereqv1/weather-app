@@ -1,5 +1,6 @@
 <template>
   <div class="wrapper">
+    <BackgroundImage />
     <SearchInput v-model="searchValue" @input="handleInput" />
 
   </div>
@@ -9,6 +10,7 @@
 // import openGeocoder from 'node-open-geocoder';
 import debounce from 'lodash.debounce';
 import SearchInput from './components/SearchInput.vue';
+import BackgroundImage from './components/BackgroundImage.vue';
 
 // openGeocoder()
 //   .geocode('Katowice')
@@ -21,6 +23,7 @@ export default {
   name: 'App',
   components: {
     SearchInput,
+    BackgroundImage,
 
   },
   data() {
@@ -59,6 +62,6 @@ export default {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: #141414;
+    // background: #141414;
   }
 </style>
