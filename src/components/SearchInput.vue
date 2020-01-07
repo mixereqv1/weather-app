@@ -20,7 +20,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
     input {
         margin-top: 50px;
         color: #fff;
