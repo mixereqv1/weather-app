@@ -1,6 +1,9 @@
 <template>
-  <div class="wrapper">
-    <BackgroundImage />
+  <div :class="[{ flexStart: step === 1 }, 'wrapper']">
+    <transition name="fade">
+      <BackgroundImage v-if="step === 0" />
+    </transition>
+    <Claim v-if="step === 0" />
     <SearchInput v-model="searchValue" @input="handleInput" />
 
     <Ad />
@@ -15,6 +18,7 @@ import debounce from 'lodash.debounce';
 import SearchInput from './components/SearchInput.vue';
 import BackgroundImage from './components/BackgroundImage.vue';
 import Ad from './components/Ad.vue';
+import Claim from './components/Claim.vue';
 
 const baseURL = 'https://api.darksky.net/forecast/88fbd9acbd7f7c461bd125ee696060a8/';
 
@@ -24,12 +28,15 @@ export default {
     SearchInput,
     BackgroundImage,
     Ad,
+    Claim,
 
   },
   data() {
     return {
       searchValue: '',
       result: [],
+      step: 0,
+      loading: false,
     };
   },
   methods: {
@@ -70,6 +77,12 @@ export default {
     -moz-osx-font-smoothing: grayscale;
     font-family: 'Montserrat', sans-serif;
   }
+  .fade-enter-active, .fade-leave-active {
+    transition: opacity .3s ease;
+  }
+  .fade-enter, .fade-leave-to {
+    opacity: 0;
+  }
   .wrapper {
     position: relative;
     width: 100%;
@@ -79,5 +92,44 @@ export default {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
+    &.flexStart {
+      justify-content: flex-start;
+    }
+  }
+  .loader {
+    display: inline-block;
+    width: 64px;
+    height: 64px;
+    margin-top: 50px;
+
+    @media (min-width: 768px) {
+      width: 90px;
+      height: 90px;
+    }
+  }
+  .loader:after {
+    content: " ";
+    display: block;
+    width: 46px;
+    height: 46px;
+    margin: 8px;
+    border-radius: 50%;
+    border: 6px solid #1e3d4a;
+    border-color: #1e3d4a transparent #1e3d4a transparent;
+    animation: loader 1.2s linear infinite;
+
+    @media (min-width: 768px) {
+      width: 90px;
+      height: 90px;
+    }
+  }
+  @keyframes loader {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 </style>
