@@ -4,9 +4,12 @@
       <BackgroundImage v-if="step === 0" />
     </transition>
     <Claim v-if="step === 0" />
-    <SearchInput v-model="searchValue" @input="handleInput" />
-
-    <Ad />
+    <SearchInput v-model="searchValue" @input="handleInput" :dark="step === 1" />
+    <div class="results" v-if="results && !loading && step === 1">
+      <Item v-for="item in results" :item="item" :key="item.id" />
+    </div>
+    <div class="loader" v-if="step === 1 && loading" />
+    <Ad :dark="step === 1" />
   </div>
 </template>
 
@@ -14,27 +17,29 @@
 import openGeocoder from 'node-open-geocoder';
 import axios from 'axios';
 import debounce from 'lodash.debounce';
-// import moment from 'moment';
-import SearchInput from './components/SearchInput.vue';
+import moment from 'moment';
 import BackgroundImage from './components/BackgroundImage.vue';
-import Ad from './components/Ad.vue';
 import Claim from './components/Claim.vue';
+import SearchInput from './components/SearchInput.vue';
+import Item from './components/Item.vue';
+import Ad from './components/Ad.vue';
 
 const baseURL = 'https://api.darksky.net/forecast/88fbd9acbd7f7c461bd125ee696060a8/';
 
 export default {
   name: 'App',
   components: {
-    SearchInput,
     BackgroundImage,
-    Ad,
     Claim,
+    SearchInput,
+    Item,
+    Ad,
 
   },
   data() {
     return {
       searchValue: '',
-      result: [],
+      results: [],
       step: 0,
       loading: false,
     };
@@ -42,22 +47,50 @@ export default {
   methods: {
     // eslint-disable-next-line
     handleInput: debounce(function() {
+      this.loading = true;
       openGeocoder()
         .geocode(this.searchValue)
         .end((err, result) => {
           axios.get(`${baseURL}${result[0].lat},${result[0].lon}?lang=pl&units=ca`)
             .then((response) => {
+              this.loading = false;
+              this.step = 1;
+
               const currentlyData = response.data.currently;
-              console.log(currentlyData);
-              // const date = new Date(currentlyData.time * 1000);
-              // const formattedDate = moment(date).format('DD/MM/YYYY');
 
               const {
                 // eslint-disable-next-line no-unused-vars
                 time, summary, temperature, apparentTemperature, pressure, windSpeed, uvIndex,
               } = currentlyData;
 
-              console.log(`Wiatr: ${Math.round(windSpeed)}km/h`);
+              const date = new Date(time * 1000);
+              const formattedDate = moment(date).format('DD/MM/YYYY');
+
+              this.results = [
+                {
+                  id: 1, name: 'Data: ', value: formattedDate, unit: '',
+                },
+                {
+                  id: 2, name: 'Niebo: ', value: summary, unit: '',
+                },
+                {
+                  id: 3, name: 'Temperatura: ', value: temperature, unit: '°C',
+                },
+                {
+                  id: 4, name: 'Odczuwalna: ', value: apparentTemperature, unit: '°C',
+                },
+                {
+                  id: 5, name: 'Ciśnienie: ', value: pressure, unit: 'hPa',
+                },
+                {
+                  id: 6, name: 'Wiatr: ', value: windSpeed, unit: 'km/h',
+                },
+                {
+                  id: 7, name: 'Indeks UV: ', value: uvIndex, unit: '',
+                },
+              ];
+
+              console.log(this.results);
             });
         });
     }, 500),
