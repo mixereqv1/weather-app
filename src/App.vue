@@ -8,7 +8,8 @@
     <div class="results" v-if="resultsBar && !loading && step === 1">
       <Item v-for="item in resultsBar" :item="item" :key="item[item.length-2]" />
     </div>
-    <div class="results temp">
+    <div class="results temp" v-if="resultsBar && !loading && step === 1">
+      <Icon :photo="photo" />
       <Item v-for="item in resultsTemp" :item="item" :key="item[item.length-2]" />
     </div>
     <div class="loader" v-if="step === 1 && loading" />
@@ -24,11 +25,13 @@ import BackgroundImage from './components/BackgroundImage.vue';
 import Claim from './components/Claim.vue';
 import SearchInput from './components/SearchInput.vue';
 import Item from './components/Item.vue';
+import Icon from './components/Icon.vue';
 import Ad from './components/Ad.vue';
 
 const d2d = require('degrees-to-direction');
 
 const baseURL = 'https://api.openweathermap.org/data/2.5/weather?lang=pl&units=metric&APPID=9ae27145a55b017fd28b4bb5edabcee1&q=';
+const baseImagesURL = 'http://openweathermap.org/img/wn/';
 
 export default {
   name: 'App',
@@ -37,6 +40,7 @@ export default {
     Claim,
     SearchInput,
     Item,
+    Icon,
     Ad,
 
   },
@@ -45,6 +49,7 @@ export default {
       searchValue: '',
       resultsBar: [],
       resultsTemp: [],
+      photo: '',
       step: 0,
       loading: false,
     };
@@ -59,11 +64,19 @@ export default {
           this.loading = false;
           this.step = 1;
 
+          this.resultsBar = [];
+          this.resultsTemp = [];
+
           if (response.status === 200) {
             const { data } = response;
 
             const { visibility } = data;
-            const { description } = data.weather[0];
+            const { description, icon } = data.weather[0];
+
+            // console.log(`${baseImagesURL}${icon}@2x.png`);
+
+            this.photo = `${baseImagesURL}${icon}@2x.png`;
+
             const {
               temp, feels_like: feelsLike, temp_min: tempMin, temp_max: tempMax, pressure, humidity,
             } = data.main;
@@ -139,9 +152,9 @@ export default {
       width: 100%;
       margin-top: 10px;
 
-      @media (min-width: 768px) {
+      @media (min-width: 1024px) {
         flex-direction: row;
-        align-items: flex-start;
+        align-items: center;
         justify-content: center;
       }
     }

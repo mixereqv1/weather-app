@@ -1,5 +1,5 @@
 <template>
-    <a target="_blank" :class="[{ dark }, 'poweredBy']" href="https://darksky.net/poweredby/">Powered by Dark Sky</a>
+    <a target="_blank" :class="[{ dark }, 'poweredBy']" href="https://openweathermap.org/city">Powered by Open Weather</a>
 </template>
 
 <script>
