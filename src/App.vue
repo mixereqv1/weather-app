@@ -5,8 +5,11 @@
     </transition>
     <Claim v-if="step === 0" />
     <SearchInput v-model="searchValue" @input="handleInput" :dark="step === 1" />
-    <div class="results" v-if="results && !loading && step === 1">
-      <Item v-for="item in results" :item="item" :key="item.id" />
+    <div class="results" v-if="resultsBar && !loading && step === 1">
+      <Item v-for="item in resultsBar" :item="item" :key="item[item.length-2]" />
+    </div>
+    <div class="results temp">
+      <Item v-for="item in resultsTemp" :item="item" :key="item[item.length-2]" />
     </div>
     <div class="loader" v-if="step === 1 && loading" />
     <Ad :dark="step === 1" />
@@ -14,17 +17,17 @@
 </template>
 
 <script>
-// import openGeocoder from 'node-open-geocoder';
 import axios from 'axios';
 import debounce from 'lodash.debounce';
-// import moment from 'moment';
+import moment from 'moment';
 import BackgroundImage from './components/BackgroundImage.vue';
 import Claim from './components/Claim.vue';
 import SearchInput from './components/SearchInput.vue';
 import Item from './components/Item.vue';
 import Ad from './components/Ad.vue';
 
-// const baseURL = 'https://api.darksky.net/forecast/88fbd9acbd7f7c461bd125ee696060a8/';
+const d2d = require('degrees-to-direction');
+
 const baseURL = 'https://api.openweathermap.org/data/2.5/weather?lang=pl&units=metric&APPID=9ae27145a55b017fd28b4bb5edabcee1&q=';
 
 export default {
@@ -40,7 +43,8 @@ export default {
   data() {
     return {
       searchValue: '',
-      results: [],
+      resultsBar: [],
+      resultsTemp: [],
       step: 0,
       loading: false,
     };
@@ -54,72 +58,44 @@ export default {
         .then((response) => {
           this.loading = false;
           this.step = 1;
-          // console.log(response);
 
           if (response.status === 200) {
             const { data } = response;
-            console.log(data);
 
-            // eslint-disable-next-line no-unused-vars
+            const { visibility } = data;
             const { description } = data.weather[0];
             const {
-            // eslint-disable-next-line
-              temp, feels_ike, temp_min, temp_max, pressure, hummidity
+              temp, feels_like: feelsLike, temp_min: tempMin, temp_max: tempMax, pressure, humidity,
             } = data.main;
-            // eslint-disable-next-line no-unused-vars
-            const { speed, deg } = data.wind;
-            // eslint-disable-next-line no-unused-vars
-            const { sunrise, sunset } = data.sys;
+            const { speed: windSpeed, deg: windDirection } = data.wind;
+            const clouds = data.clouds.all;
+            let { sunrise, sunset } = data.sys;
+
+            const time = data.dt;
+            const date = new Date(time * 1000);
+            const formattedDate = `Stan z: ${moment(date).format('DD/MM/YYYY HH:mm:ss')}`;
+
+            sunrise = moment(sunrise * 1000).format('HH:mm:ss');
+            sunset = moment(sunset * 1000).format('HH:mm:ss');
+
+            const wind = `Wiatr: ${windSpeed} km/h ${d2d(windDirection)}`;
+            const pressureCount = `Ciśnienie: ${pressure} hPa`;
+            const cloudy = `Zachmurzenie: ${clouds}%`;
+            const humidityCount = `Wilgotność: ${humidity}%`;
+            const visibilityCount = `Widoczność: +/- ${visibility / 1000} km`;
+            const sun = `Wschód: ${sunrise} | Zachód: ${sunset}`;
+
+            const temperature = `${temp.toFixed(0)}°C ${description.charAt(0).toUpperCase()}${description.slice(1)}`;
+            const temperatureMore = `Odczuwalna: ${feelsLike.toFixed(0)}°C Najniższa: ${tempMin.toFixed(0)}°C Najwyższa: ${tempMax.toFixed(0)}°C`;
+
+            this.resultsBar.push(formattedDate, wind, pressureCount,
+              cloudy, humidityCount, visibilityCount, sun);
+            this.resultsTemp.push(temperature, temperatureMore);
+          } else {
+            console.log(`Error code: ${response.status}`);
           }
         });
-
-      // openGeocoder()
-      //   .geocode(this.searchValue)
-      //   .end((err, result) => {
-      //     axios.get(`${baseURL}${result[0].lat},${result[0].lon}?lang=pl&units=ca`)
-      //       .then((response) => {
-      //         this.loading = false;
-      //         this.step = 1;
-
-      //         const currentlyData = response.data.currently;
-
-      //         const {
-      //           // eslint-disable-next-line no-unused-vars
-      //           time, summary, temperature, apparentTemperature, pressure, windSpeed, uvIndex,
-      //         } = currentlyData;
-
-      //         const date = new Date(time * 1000);
-      //         const formattedDate = moment(date).format('DD/MM/YYYY HH:mm:ss');
-
-      //         this.results = [
-      //           {
-      //             id: 1, name: 'Data: ', value: formattedDate, unit: '',
-      //           },
-      //           {
-      //             id: 2, name: 'Niebo: ', value: summary, unit: '',
-      //           },
-      //           {
-      //             id: 3, name: 'Temperatura: ', value: Math.round(temperature), unit: '°C',
-      //           },
-      //           {
-      //             id: 4, name: 'Odczuwalna temperautura: ', value:
-      // Math.round(apparentTemperature), unit: '°C',
-      //           },
-      //           {
-      //             id: 5, name: 'Ciśnienie: ', value: pressure, unit: 'hPa',
-      //           },
-      //           {
-      //             id: 6, name: 'Wiatr: ', value: windSpeed, unit: 'km/h',
-      //           },
-      //           {
-      //             id: 7, name: 'Indeks UV: ', value: uvIndex, unit: '',
-      //           },
-      //         ];
-
-      //         console.log(this.results);
-      //       });
-      //   });
-    }, 500),
+    }, 800),
   },
 };
 </script>
@@ -154,6 +130,24 @@ export default {
 
     &.flexStart {
       justify-content: flex-start;
+    }
+
+    .results {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      width: 100%;
+      margin-top: 10px;
+
+      @media (min-width: 768px) {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: center;
+      }
+    }
+
+    .temp {
+      font-size: 30px;
     }
   }
   .loader {

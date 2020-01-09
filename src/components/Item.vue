@@ -1,9 +1,5 @@
 <template>
-    <div class="item">
-      <span> {{ name }} </span>
-      <span> {{ value }} </span>
-      <span> {{ unit }} </span>
-    </div>
+  <span class="item"> {{ value }} </span>
 </template>
 
 <script>
@@ -12,15 +8,13 @@ export default {
   name: 'Item',
   props: {
     item: {
-      type: Object,
+      type: String,
       required: true,
     },
   },
   data() {
     return {
-      name: this.item.name,
-      value: this.item.value,
-      unit: this.item.unit,
+      value: this.item,
     };
   },
 };
@@ -28,16 +22,10 @@ export default {
 
 <style lang="scss" scoped>
     .item {
-        padding: 20px;
-        margin: 10px;
-        background: #000;
-        color: #fff;
-        width: 250px;
-        // width: 90%;
-        // height: 400px;
-
-        // @media (min-width: 768px) {
-        //     width: 80%;
-        // }
+      padding: 10px;
+      margin: 5px;
+      font-size: .8em;
+      font-weight: bold;
+      text-align: center;
     }
 </style>
