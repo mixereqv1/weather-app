@@ -14,17 +14,18 @@
 </template>
 
 <script>
-import openGeocoder from 'node-open-geocoder';
+// import openGeocoder from 'node-open-geocoder';
 import axios from 'axios';
 import debounce from 'lodash.debounce';
-import moment from 'moment';
+// import moment from 'moment';
 import BackgroundImage from './components/BackgroundImage.vue';
 import Claim from './components/Claim.vue';
 import SearchInput from './components/SearchInput.vue';
 import Item from './components/Item.vue';
 import Ad from './components/Ad.vue';
 
-const baseURL = 'https://api.darksky.net/forecast/88fbd9acbd7f7c461bd125ee696060a8/';
+// const baseURL = 'https://api.darksky.net/forecast/88fbd9acbd7f7c461bd125ee696060a8/';
+const baseURL = 'https://api.openweathermap.org/data/2.5/weather?lang=pl&units=metric&APPID=9ae27145a55b017fd28b4bb5edabcee1&q=';
 
 export default {
   name: 'App',
@@ -48,51 +49,76 @@ export default {
     // eslint-disable-next-line
     handleInput: debounce(function() {
       this.loading = true;
-      openGeocoder()
-        .geocode(this.searchValue)
-        .end((err, result) => {
-          axios.get(`${baseURL}${result[0].lat},${result[0].lon}?lang=pl&units=ca`)
-            .then((response) => {
-              this.loading = false;
-              this.step = 1;
 
-              const currentlyData = response.data.currently;
+      axios.get(`${baseURL}${this.searchValue}`)
+        .then((response) => {
+          this.loading = false;
+          this.step = 1;
+          // console.log(response);
 
-              const {
-                // eslint-disable-next-line no-unused-vars
-                time, summary, temperature, apparentTemperature, pressure, windSpeed, uvIndex,
-              } = currentlyData;
+          if (response.status === 200) {
+            const { data } = response;
+            console.log(data);
 
-              const date = new Date(time * 1000);
-              const formattedDate = moment(date).format('DD/MM/YYYY');
-
-              this.results = [
-                {
-                  id: 1, name: 'Data: ', value: formattedDate, unit: '',
-                },
-                {
-                  id: 2, name: 'Niebo: ', value: summary, unit: '',
-                },
-                {
-                  id: 3, name: 'Temperatura: ', value: temperature, unit: '°C',
-                },
-                {
-                  id: 4, name: 'Odczuwalna: ', value: apparentTemperature, unit: '°C',
-                },
-                {
-                  id: 5, name: 'Ciśnienie: ', value: pressure, unit: 'hPa',
-                },
-                {
-                  id: 6, name: 'Wiatr: ', value: windSpeed, unit: 'km/h',
-                },
-                {
-                  id: 7, name: 'Indeks UV: ', value: uvIndex, unit: '',
-                },
-              ];
-
-              console.log(this.results);
-            });
+            // eslint-disable-next-line no-unused-vars
+            const { description } = data.weather[0];
+            const {
+            // eslint-disable-next-line
+              temp, feels_ike, temp_min, temp_max, pressure, hummidity
+            } = data.main;
+            // eslint-disable-next-line no-unused-vars
+            const { speed, deg } = data.wind;
+            // eslint-disable-next-line no-unused-vars
+            const { sunrise, sunset } = data.sys;
+          }
         });
+
+      // openGeocoder()
+      //   .geocode(this.searchValue)
+      //   .end((err, result) => {
+      //     axios.get(`${baseURL}${result[0].lat},${result[0].lon}?lang=pl&units=ca`)
+      //       .then((response) => {
+      //         this.loading = false;
+      //         this.step = 1;
+
+      //         const currentlyData = response.data.currently;
+
+      //         const {
+      //           // eslint-disable-next-line no-unused-vars
+      //           time, summary, temperature, apparentTemperature, pressure, windSpeed, uvIndex,
+      //         } = currentlyData;
+
+      //         const date = new Date(time * 1000);
+      //         const formattedDate = moment(date).format('DD/MM/YYYY HH:mm:ss');
+
+      //         this.results = [
+      //           {
+      //             id: 1, name: 'Data: ', value: formattedDate, unit: '',
+      //           },
+      //           {
+      //             id: 2, name: 'Niebo: ', value: summary, unit: '',
+      //           },
+      //           {
+      //             id: 3, name: 'Temperatura: ', value: Math.round(temperature), unit: '°C',
+      //           },
+      //           {
+      //             id: 4, name: 'Odczuwalna temperautura: ', value:
+      // Math.round(apparentTemperature), unit: '°C',
+      //           },
+      //           {
+      //             id: 5, name: 'Ciśnienie: ', value: pressure, unit: 'hPa',
+      //           },
+      //           {
+      //             id: 6, name: 'Wiatr: ', value: windSpeed, unit: 'km/h',
+      //           },
+      //           {
+      //             id: 7, name: 'Indeks UV: ', value: uvIndex, unit: '',
+      //           },
+      //         ];
+
+      //         console.log(this.results);
+      //       });
+      //   });
     }, 500),
   },
 };
