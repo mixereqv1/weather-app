@@ -8,9 +8,12 @@
     <div class="results" v-if="resultsBar && !loading && step === 1">
       <Item v-for="item in resultsBar" :item="item" :key="item[item.length-2]" />
     </div>
-    <div class="results temp" v-if="resultsBar && !loading && step === 1">
+    <div class="results temp" v-if="resultsTemp && !loading && step === 1">
       <Icon :photo="photo" />
-      <Item v-for="item in resultsTemp" :item="item" :key="item[item.length-2]" />
+      <Item :item="resultsTemp" />
+    </div>
+    <div class="results temp" v-if="resultsTempMore && !loading && step === 1">
+      <Item :item="resultsTempMore" />
     </div>
     <div class="loader" v-if="step === 1 && loading" />
     <Ad :dark="step === 1" />
@@ -48,7 +51,8 @@ export default {
     return {
       searchValue: '',
       resultsBar: [],
-      resultsTemp: [],
+      resultsTemp: '',
+      resultsTempMore: '',
       photo: '',
       step: 0,
       loading: false,
@@ -72,8 +76,6 @@ export default {
 
             const { visibility } = data;
             const { description, icon } = data.weather[0];
-
-            // console.log(`${baseImagesURL}${icon}@2x.png`);
 
             this.photo = `${baseImagesURL}${icon}@2x.png`;
 
@@ -99,11 +101,12 @@ export default {
             const sun = `Wschód: ${sunrise} | Zachód: ${sunset}`;
 
             const temperature = `${temp.toFixed(0)}°C ${description.charAt(0).toUpperCase()}${description.slice(1)}`;
-            const temperatureMore = `Odczuwalna: ${feelsLike.toFixed(0)}°C Najniższa: ${tempMin.toFixed(0)}°C Najwyższa: ${tempMax.toFixed(0)}°C`;
+            const temperatureMore = `Odczuwalna: ${feelsLike.toFixed(0)}°C  Najniższa: ${tempMin.toFixed(0)}°C Najwyższa: ${tempMax.toFixed(0)}°C`;
 
             this.resultsBar.push(formattedDate, wind, pressureCount,
               cloudy, humidityCount, visibilityCount, sun);
-            this.resultsTemp.push(temperature, temperatureMore);
+            this.resultsTemp = temperature;
+            this.resultsTempMore = temperatureMore;
           } else {
             console.log(`Error code: ${response.status}`);
           }

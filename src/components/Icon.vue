@@ -32,5 +32,6 @@ export default {
       background-size: cover;
       background-position: center;
       background-color: gray;
+      border-radius: 50%;
     }
 </style>
