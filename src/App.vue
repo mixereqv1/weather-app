@@ -107,8 +107,6 @@ export default {
               cloudy, humidityCount, visibilityCount, sun);
             this.resultsTemp = temperature;
             this.resultsTempMore = temperatureMore;
-          } else {
-            console.log(`Error code: ${response.status}`);
           }
         });
     }, 800),
